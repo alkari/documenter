@@ -53,7 +53,7 @@ def main():
         if os.path.exists(f"{store_name}.pkl"):
             with open(f"{store_name}.pkl", "rb") as f:
                 VectorStore = dill.load(f)
-            st.write('Embeddings Loaded from the Disk') #
+            # st.write('Embeddings Loaded from the Disk') #
         else:
             embeddings = GooglePalmEmbeddings()
             VectorStore = FAISS.from_texts(chunks, embedding=embeddings)
@@ -62,7 +62,7 @@ def main():
 
 
         # Accept user questions/query
-        query = st.text_input("Ask questions about your data:")
+        query = st.text_input("Ask questions about your document:")
         # st.write(query)
 
         if query:
