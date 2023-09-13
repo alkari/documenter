@@ -1,33 +1,74 @@
-from collections import namedtuple
-import altair as alt
-import math
-import pandas as pd
+import os
+import pickle
 import streamlit as st
+
+from dotenv import load_dotenv
+from PyPDF2 import PdfReader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.embeddings import GooglePalmEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.llms import GooglePalm
+from langchain.chains.question_answering import load_qa_chain
+
 
 """
 # Welcome to Documenter!
 
-Edit `/documenter_app.py` 
+Do `stuff` 
 """
 
+load_dotenv()
 
-with st.echo(code_location='below'):
-    total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
-    num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
+def main():
+    st.header("Ask away..")
 
-    Point = namedtuple('Point', 'x y')
-    data = []
 
-    points_per_turn = total_points / num_turns
+    # upload a PDF file
+    pdf = st.file_uploader("Upload your PDF", type='pdf')
 
-    for curr_point_num in range(total_points):
-        curr_turn, i = divmod(curr_point_num, points_per_turn)
-        angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
-        radius = curr_point_num / total_points
-        x = radius * math.cos(angle)
-        y = radius * math.sin(angle)
-        data.append(Point(x, y))
+    # st.write(pdf)
+    if pdf is not None:
+        pdf_reader = PdfReader(pdf)
+        
+        text = ""
+        for page in pdf_reader.pages:
+            text += page.extract_text()
 
-    st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
-        .mark_circle(color='#0068c9', opacity=0.5)
-        .encode(x='x:Q', y='y:Q'))
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000,
+            chunk_overlap=200,
+            length_function=len
+            )
+        chunks = text_splitter.split_text(text=text)
+
+        # # embeddings
+        store_name = pdf.name[:-4]
+        st.write(f'{store_name}')
+        st.write(chunks) #
+
+        if os.path.exists(f"{store_name}.pkl"):
+            with open(f"{store_name}.pkl", "rb") as f:
+                VectorStore = pickle.load(f)
+            # st.write('Embeddings Loaded from the Disk')s
+        else:
+            embeddings = GooglePalmEmbeddings()
+            VectorStore = FAISS.from_texts(chunks, embedding=embeddings)
+            with open(f"{store_name}.pkl", "wb") as f:
+                pickle.dump(VectorStore, f)
+
+
+        # Accept user questions/query
+        query = st.text_input("Ask questions about your data:")
+        st.write(query) #
+
+        if query:
+            docs = VectorStore.similarity_search(query=query, k=3)
+
+            llm = GooglePalm()
+            llm.temperature = 0.1
+            chain = load_qa_chain(llm=llm, chain_type="stuff")
+            response = chain.run(input_documents=docs, question=query)
+            st.write(response)
+
+if __name__ == '__main__':
+    main()
