@@ -2,7 +2,7 @@ import os
 import pickle
 import streamlit as st
 
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings import GooglePalmEmbeddings
@@ -17,14 +17,14 @@ from langchain.chains.question_answering import load_qa_chain
 Do `stuff` 
 """
 
-load_dotenv()
+# load_dotenv()
 
 def main():
     st.header("Ask away..")
 
 
     # upload a PDF file
-    pdf = st.file_uploader("Upload your PDF", type='pdf')
+    pdf = st.file_uploader("Upload a PDF", type='pdf')
 
     # st.write(pdf)
     if pdf is not None:
@@ -44,12 +44,12 @@ def main():
         # # embeddings
         store_name = pdf.name[:-4]
         st.write(f'{store_name}')
-        st.write(chunks) #
+        # st.write(chunks)
 
         if os.path.exists(f"{store_name}.pkl"):
             with open(f"{store_name}.pkl", "rb") as f:
                 VectorStore = pickle.load(f)
-            # st.write('Embeddings Loaded from the Disk')s
+            st.write('Embeddings Loaded from the Disk') #
         else:
             embeddings = GooglePalmEmbeddings()
             VectorStore = FAISS.from_texts(chunks, embedding=embeddings)
