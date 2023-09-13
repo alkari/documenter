@@ -41,7 +41,7 @@ def main():
 
         # # embeddings
         store_name = pdf.name[:-4]
-        st.write(f'{store_name}')
+        # st.write(f'{store_name}')
         # st.write(chunks)
 
         if os.path.exists(f"{store_name}.pkl"):
@@ -57,7 +57,7 @@ def main():
 
         # Accept user questions/query
         query = st.text_input("Ask questions about your data:")
-        st.write(query) #
+        # st.write(query)
 
         if query:
             docs = VectorStore.similarity_search(query=query, k=3)
