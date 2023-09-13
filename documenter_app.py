@@ -1,5 +1,5 @@
 import os
-import pickle
+import dill
 import streamlit as st
 
 # from dotenv import load_dotenv
@@ -12,9 +12,7 @@ from langchain.chains.question_answering import load_qa_chain
 
 
 """
-# Welcome to Documenter!
-
-Do `stuff` 
+# Documenter!
 """
 
 # load_dotenv()
@@ -48,13 +46,13 @@ def main():
 
         if os.path.exists(f"{store_name}.pkl"):
             with open(f"{store_name}.pkl", "rb") as f:
-                VectorStore = pickle.load(f)
+                VectorStore = dill.load(f)
             st.write('Embeddings Loaded from the Disk') #
         else:
             embeddings = GooglePalmEmbeddings()
             VectorStore = FAISS.from_texts(chunks, embedding=embeddings)
             with open(f"{store_name}.pkl", "wb") as f:
-                pickle.dump(VectorStore, f)
+                dill.dump(VectorStore, f)
 
 
         # Accept user questions/query
