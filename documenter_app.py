@@ -2,7 +2,6 @@ import os
 import dill
 import streamlit as st
 
-# from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings import GooglePalmEmbeddings
@@ -15,7 +14,14 @@ from langchain.chains.question_answering import load_qa_chain
 # Documenter!
 """
 
-# load_dotenv()
+# Hide Streamlit burger and tagline
+hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
 
 def main():
     st.header("Ask away..")
