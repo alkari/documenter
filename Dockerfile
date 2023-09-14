@@ -13,7 +13,18 @@ RUN apt-get update && apt-get install -y \
 
 RUN git clone https://github.com/alkari/documenter.git .
 
+RUN mkdir -p ~/.streamlit/ && \
+echo "\
+[server]\n\
+headless = true\n\
+port = $PORT\n\
+enableXsrfProtection=false\n\
+enableCORS = false\n\
+\n\
+" > ~/.streamlit/config.toml
+
 RUN pip3 install -r requirements.txt
+
 
 EXPOSE 8501
 
