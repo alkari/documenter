@@ -30,28 +30,33 @@ def main():
     pdf_files = st.file_uploader("Upload one or more PDFs", type='pdf', accept_multiple_files=True)
 
     if pdf_files:
-        all_text_chunks = []
+        # all_text_chunks = []
+        VectorStores = {}
 
-        # Process each uploaded PDF file
+        # Process each uploaded PDF file and combine text
+        # combined_text = ""
+
         for pdf in pdf_files:
             pdf_reader = PdfReader(pdf)
             text = ""
+            
+            # Generate a unique name for the VectorStore based on the PDF filename
+            store_name = pdf.name[:-4]
 
             # Extract text from PDF pages
             for page in pdf_reader.pages:
                 text += page.extract_text()
 
+            # combined_text += text # or use all_text_chunks array?
+
             # Split the extracted text into smaller chunks
             text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=1000,
-                chunk_overlap=200,
+                chunk_size=2000,
+                chunk_overlap=100,
                 length_function=len
             )
             chunks = text_splitter.split_text(text=text)
-            all_text_chunks.extend(chunks)
-
-            # Generate a unique name for the VectorStore based on the PDF filename
-            store_name = pdf.name[:-4]
+            # all_text_chunks.extend(chunks)
 
             # Check if VectorStore exists on disk, if not, create and save it
             if os.path.exists(f"{store_name}.pkl"):
@@ -62,13 +67,18 @@ def main():
                 VectorStore = FAISS.from_texts(chunks, embedding=embeddings)
                 with open(f"{store_name}.pkl", "wb") as f:
                     dill.dump(VectorStore, f)
+            
+            VectorStores[store_name] = VectorStore
 
         # Accept user questions/queries
         query = st.text_input("Ask questions about your documents:")
 
         if query:
+            # Combine VectorStores from all documents
+            CombinedVectorStore = FAISS.from_multiple_stores(VectorStores.values())
+
             # Perform similarity search to find relevant documents
-            docs = VectorStore.similarity_search(query=query, k=3)
+            docs = CombinedVectorStore.similarity_search(query=query, k=3)
 
             # Initialize the language model and QA chain
             llm = GooglePalm()
