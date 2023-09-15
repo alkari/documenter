@@ -35,7 +35,7 @@ def main():
 
         # Process each uploaded PDF file and combine text
     
-        for pdf in pdf_files:
+        for index, pdf in enumerate(pdf_files):
             pdf_reader = PdfReader(pdf)
             text = ""
             
@@ -65,7 +65,10 @@ def main():
                     dill.dump(VectorStore, f)
             
             # Combine VectorStores from all documents
-            VectorStores = FAISS.merge_from(VectorStore)
+            if index==0:
+                VectorStores = VectorStore
+            else:
+                VectorStores = FAISS.merge_from(VectorStore)
 
         # Accept user questions/queries
         query = st.text_input("Ask questions about your documents:")
