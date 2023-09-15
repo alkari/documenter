@@ -68,7 +68,7 @@ def main():
             if index==0:
                 VectorStores = VectorStore
             else:
-                VectorStores = FAISS.merge_from(VectorStore)
+                VectorStores.merge_from(VectorStore)
 
         # Accept user questions/queries
         query = st.text_input("Ask questions about your documents:")
